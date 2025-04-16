@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply text-gray-900 antialiased;
+  }
+
+  body {
+    @apply bg-gray-50;
+  }
+
+  h1 {
+    @apply text-4xl font-bold tracking-tight;
+  }
+
+  h2 {
+    @apply text-2xl font-semibold;
+  }
+
+  h3 {
+    @apply text-xl font-medium;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-medium transition-colors
+           min-h-[44px] min-w-[44px] /* Ensure touch target size */
+           focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply btn bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+  }
+
+  .btn-secondary {
+    @apply btn bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500;
+  }
+
+  .btn-success {
+    @apply btn bg-green-600 text-white hover:bg-green-700 focus:ring-green-500;
+  }
+
+  .input-field {
+    @apply block w-full rounded-md border-gray-300 shadow-sm 
+           focus:border-blue-500 focus:ring-blue-500
+           text-base min-h-[44px];
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-sm p-6;
+  }
+
+  .viewer-controls {
+    @apply fixed bg-white rounded-lg shadow-lg p-4 z-50;
+  }
+
+  .viewer-toolbar {
+    @apply fixed bg-white rounded-lg shadow-lg p-2 z-50 flex flex-col gap-2;
+  }
+
+  .viewer-toolbar-button {
+    @apply p-2 hover:bg-gray-100 rounded-lg transition-colors;
+  }
+}

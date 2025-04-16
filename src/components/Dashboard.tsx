@@ -291,6 +291,52 @@ const Dashboard: React.FC = () => {
                       <p className="text-lg font-medium">{formatIDR(activeModel.cost)}</p>
                     </div>
                   </div>
+
+                  {/* Partial Integration Explanation */}
+                  <div className="mt-6 border-t pt-4">
+                    <h3 className="text-lg font-semibold mb-3">Langkah Perhitungan Integral Parsial</h3>
+                    <div className="space-y-4 text-sm">
+                      <div>
+                        <p className="font-medium">1. Perhitungan Volume</p>
+                        <p className="text-gray-600 mt-1">
+                          V = ∫∫∫ dV = ∫∫∫ dx dy dz
+                        </p>
+                        <p className="text-gray-600 mt-1">
+                          Menggunakan metode integral parsial:
+                        </p>
+                        <p className="font-mono bg-gray-50 p-2 rounded mt-1">
+                          ∫u dv = uv - ∫v du
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <p className="font-medium">2. Perhitungan Luas Permukaan</p>
+                        <p className="text-gray-600 mt-1">
+                          A = ∫∫ dA = ∫∫ |∂r/∂u × ∂r/∂v| du dv
+                        </p>
+                        <p className="text-gray-600 mt-1">
+                          Untuk setiap segmen permukaan:
+                        </p>
+                        <p className="font-mono bg-gray-50 p-2 rounded mt-1">
+                          dA = |n| dS = |∂r/∂u × ∂r/∂v| du dv
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="font-medium">3. Optimalisasi</p>
+                        <p className="text-gray-600 mt-1">
+                          Menggunakan metode Lagrange untuk optimalisasi dengan batasan:
+                        </p>
+                        <p className="font-mono bg-gray-50 p-2 rounded mt-1">
+                          L(x, λ) = f(x) + λg(x)
+                        </p>
+                        <p className="text-gray-600 mt-1">
+                          dimana f(x) adalah fungsi objektif dan g(x) adalah batasan.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
                   <button 
                     onClick={handleExportReport}
                     className="btn-success w-full"

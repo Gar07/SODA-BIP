@@ -19,7 +19,7 @@ const MaterialLibrary: React.FC = () => {
         <Book className="h-5 w-5 text-blue-600" />
         <h3 className="text-lg font-semibold">Pustaka Material</h3>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3">
         {commonMaterials.map((material) => (
           <button
             key={material.name}

@@ -221,37 +221,37 @@ const Dashboard: React.FC = () => {
       
       {/* Header */}
       <header className="bg-white shadow-sm fixed top-0 left-0 right-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <Calculator className="h-8 w-8 text-blue-600" />
-              <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Calculator className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+              <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 truncate">
                 SODA-BIP
               </h1>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <button
                 onClick={handleUndo}
                 disabled={history.past.length === 0}
-                className={`btn-secondary text-sm md:text-base ${history.past.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`p-2 rounded-lg hover:bg-gray-100 transition-colors ${history.past.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title="Undo"
               >
-                <Undo className="h-5 w-5" />
+                <Undo className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
               <button
                 onClick={handleRedo}
                 disabled={history.future.length === 0}
-                className={`btn-secondary text-sm md:text-base ${history.future.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`p-2 rounded-lg hover:bg-gray-100 transition-colors ${history.future.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                 title="Redo"
               >
-                <Redo className="h-5 w-5" />
+                <Redo className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
               <button
                 onClick={() => setShowTutorial(true)}
-                className="btn-secondary text-sm md:text-base"
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
                 title="Bantuan"
               >
-                <HelpCircle className="h-5 w-5" />
+                <HelpCircle className="h-4 w-4 sm:h-5 sm:w-5" />
               </button>
               <input
                 type="file"
@@ -262,11 +262,10 @@ const Dashboard: React.FC = () => {
               />
               <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="btn-primary text-sm md:text-base"
+                className="btn-primary text-sm py-1.5 px-3 sm:py-2 sm:px-4"
               >
-                <Upload className="h-5 w-5 mr-2" />
-                <span className="hidden sm:inline">Impor Model</span>
-                <span className="sm:hidden">Impor</span>
+                <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Impor Model</span>
               </button>
             </div>
           </div>
@@ -274,15 +273,15 @@ const Dashboard: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="pt-16 pb-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="pt-20 pb-8 px-4">
+        <div className="max-w-7xl mx-auto space-y-6">
           {/* 3D Viewer */}
-          <div className="card mb-6">
-            <h2 className="text-xl font-semibold mb-4">Tampilan Model</h2>
-            <div className="aspect-[16/9] md:aspect-[21/9] bg-gray-100 rounded-lg mb-4">
+          <div className="card">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4">Tampilan Model</h2>
+            <div className="aspect-[4/3] sm:aspect-[16/9] md:aspect-[21/9] bg-gray-100 rounded-lg mb-4">
               <Suspense fallback={
                 <div className="flex items-center justify-center h-full">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
+                  <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-blue-600" />
                 </div>
               }>
                 <Viewer3D model={modelGeometry || undefined} />
@@ -294,15 +293,15 @@ const Dashboard: React.FC = () => {
           {activeModel && <ChartVisualization />}
 
           {/* Control Panels */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Material Library */}
-            <div className="lg:col-span-1">
+            <div className="md:col-span-2 lg:col-span-1">
               <MaterialLibrary />
             </div>
 
             {/* Material Properties */}
             <div className="card">
-              <h2 className="text-xl font-semibold mb-4">Properti Material</h2>
+              <h2 className="text-lg sm:text-xl font-semibold mb-4">Properti Material</h2>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -315,31 +314,33 @@ const Dashboard: React.FC = () => {
                     className="input-field"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Biaya per Unit
-                  </label>
-                  <input
-                    type="number"
-                    value={material.cost}
-                    onChange={(e) => setMaterial({ ...material, cost: parseFloat(e.target.value) })}
-                    className="input-field"
-                    min="0"
-                    step="0.01"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Densitas (kg/m³)
-                  </label>
-                  <input
-                    type="number"
-                    value={material.density}
-                    onChange={(e) => setMaterial({ ...material, density: parseFloat(e.target.value) })}
-                    className="input-field"
-                    min="0"
-                    step="0.01"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Biaya per Unit
+                    </label>
+                    <input
+                      type="number"
+                      value={material.cost}
+                      onChange={(e) => setMaterial({ ...material, cost: parseFloat(e.target.value) })}
+                      className="input-field"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Densitas (kg/m³)
+                    </label>
+                    <input
+                      type="number"
+                      value={material.density}
+                      onChange={(e) => setMaterial({ ...material, density: parseFloat(e.target.value) })}
+                      className="input-field"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -359,33 +360,35 @@ const Dashboard: React.FC = () => {
 
             {/* Optimization Constraints */}
             <div className="card">
-              <h2 className="text-xl font-semibold mb-4">Batasan Optimalisasi</h2>
+              <h2 className="text-lg sm:text-xl font-semibold mb-4">Batasan Optimalisasi</h2>
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Biaya Maksimum
-                  </label>
-                  <input
-                    type="number"
-                    value={constraints.maxCost}
-                    onChange={(e) => setConstraints({ ...constraints, maxCost: parseFloat(e.target.value) })}
-                    className="input-field"
-                    min="0"
-                    step="1000"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Volume Minimum (m³)
-                  </label>
-                  <input
-                    type="number"
-                    value={constraints.minVolume}
-                    onChange={(e) => setConstraints({ ...constraints, minVolume: parseFloat(e.target.value) })}
-                    className="input-field"
-                    min="0"
-                    step="0.1"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Biaya Maksimum
+                    </label>
+                    <input
+                      type="number"
+                      value={constraints.maxCost}
+                      onChange={(e) => setConstraints({ ...constraints, maxCost: parseFloat(e.target.value) })}
+                      className="input-field"
+                      min="0"
+                      step="1000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Volume Minimum (m³)
+                    </label>
+                    <input
+                      type="number"
+                      value={constraints.minVolume}
+                      onChange={(e) => setConstraints({ ...constraints, minVolume: parseFloat(e.target.value) })}
+                      className="input-field"
+                      min="0"
+                      step="0.1"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -405,136 +408,134 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Analysis Results */}
-          <div className="mt-6">
-            <div className="card">
-              <h2 className="text-xl font-semibold mb-4">Hasil Analisis</h2>
-              {activeModel ? (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-500">Volume</p>
-                      <p className="text-lg font-medium">{activeModel.volume.toFixed(2)} m³</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Luas Permukaan</p>
-                      <p className="text-lg font-medium">{activeModel.surfaceArea.toFixed(2)} m²</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Berat</p>
-                      <p className="text-lg font-medium">{activeModel.weight.toFixed(2)} kg</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Biaya</p>
-                      <p className="text-lg font-medium">{formatIDR(activeModel.cost)}</p>
-                    </div>
+          <div className="card">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4">Hasil Analisis</h2>
+            {activeModel ? (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-500">Volume</p>
+                    <p className="text-lg font-medium">{activeModel.volume.toFixed(2)} m³</p>
                   </div>
-
-                  {/* Calculation Steps */}
-                  <div className="space-y-4">
-                    <CalculationSection
-                      title="1. Perhitungan Volume"
-                      isOpen={openSections.volume}
-                      onToggle={() => toggleSection('volume')}
-                    >
-                      <div className="space-y-3">
-                        <p className="text-sm text-gray-600">
-                          Perhitungan volume menggunakan integral lipat tiga:
-                        </p>
-                        <div className="bg-gray-50 p-3 rounded-lg">
-                          <p className="font-mono text-sm">V = ∫∫∫ dV = ∫∫∫ dx dy dz</p>
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          Menggunakan metode integral parsial dengan substitusi:
-                        </p>
-                        <div className="bg-gray-50 p-3 rounded-lg space-y-2">
-                          <p className="font-mono text-sm">u = x</p>
-                          <p className="font-mono text-sm">dv = dy dz</p>
-                          <p className="font-mono text-sm">∫u dv = uv - ∫v du</p>
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          Hasil perhitungan volume:
-                        </p>
-                        <p className="font-medium">
-                          V = {activeModel.volume.toFixed(4)} m³
-                        </p>
-                      </div>
-                    </CalculationSection>
-
-                    <CalculationSection
-                      title="2. Perhitungan Luas Permukaan"
-                      isOpen={openSections.surface}
-                      onToggle={() => toggleSection('surface')}
-                    >
-                      <div className="space-y-3">
-                        <p className="text-sm text-gray-600">
-                          Perhitungan luas permukaan menggunakan integral lipat dua:
-                        </p>
-                        <div className="bg-gray-50 p-3 rounded-lg">
-                          <p className="font-mono text-sm">A = ∫∫ dA = ∫∫ |∂r/∂u × ∂r/∂v| du dv</p>
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          Untuk setiap elemen permukaan:
-                        </p>
-                        <div className="bg-gray-50 p-3 rounded-lg space-y-2">
-                          <p className="font-mono text-sm">dA = |n| dS</p>
-                          <p className="font-mono text-sm">n = ∂r/∂u × ∂r/∂v</p>
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          Hasil perhitungan luas permukaan:
-                        </p>
-                        <p className="font-medium">
-                          A = {activeModel.surfaceArea.toFixed(4)} m²
-                        </p>
-                      </div>
-                    </CalculationSection>
-
-                    <CalculationSection
-                      title="3. Optimalisasi"
-                      isOpen={openSections.optimization}
-                      onToggle={() => toggleSection('optimization')}
-                    >
-                      <div className="space-y-3">
-                        <p className="text-sm text-gray-600">
-                          Optimalisasi menggunakan metode Lagrange:
-                        </p>
-                        <div className="bg-gray-50 p-3 rounded-lg">
-                          <p className="font-mono text-sm">L(x, λ) = f(x) + λg(x)</p>
-                        </div>
-                        <p className="text-sm text-gray-600">
-                          Dengan batasan:
-                        </p>
-                        <div className="bg-gray-50 p-3 rounded-lg space-y-2">
-                          <p className="font-mono text-sm">g₁(x): V ≥ {constraints.minVolume} m³</p>
-                          <p className="font-mono text-sm">g₂(x): C ≤ {formatIDR(constraints.maxCost)}</p>
-                          <p className="font-mono text-sm">g₃(x): W ≤ {constraints.maxWeight} kg</p>
-                        </div>
-                      </div>
-                    </CalculationSection>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-500">Luas Permukaan</p>
+                    <p className="text-lg font-medium">{activeModel.surfaceArea.toFixed(2)} m²</p>
                   </div>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-500">Berat</p>
+                    <p className="text-lg font-medium">{activeModel.weight.toFixed(2)} kg</p>
+                  </div>
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <p className="text-sm text-gray-500">Biaya</p>
+                    <p className="text-lg font-medium">{formatIDR(activeModel.cost)}</p>
+                  </div>
+                </div>
 
-                  <button 
-                    onClick={handleExportReport}
-                    className="btn-success w-full"
+                {/* Calculation Steps */}
+                <div className="space-y-4">
+                  <CalculationSection
+                    title="1. Perhitungan Volume"
+                    isOpen={openSections.volume}
+                    onToggle={() => toggleSection('volume')}
                   >
-                    <FileDown className="h-5 w-5 mr-2" />
-                    Ekspor Laporan
-                  </button>
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 mb-4">
-                    Impor model untuk melihat hasil analisis
-                  </p>
-                  <button 
-                    onClick={() => fileInputRef.current?.click()}
-                    className="btn-primary"
+                    <div className="space-y-3">
+                      <p className="text-sm text-gray-600">
+                        Perhitungan volume menggunakan integral lipat tiga:
+                      </p>
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <p className="font-mono text-sm">V = ∫∫∫ dV = ∫∫∫ dx dy dz</p>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Menggunakan metode integral parsial dengan substitusi:
+                      </p>
+                      <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+                        <p className="font-mono text-sm">u = x</p>
+                        <p className="font-mono text-sm">dv = dy dz</p>
+                        <p className="font-mono text-sm">∫u dv = uv - ∫v du</p>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Hasil perhitungan volume:
+                      </p>
+                      <p className="font-medium">
+                        V = {activeModel.volume.toFixed(4)} m³
+                      </p>
+                    </div>
+                  </CalculationSection>
+
+                  <CalculationSection
+                    title="2. Perhitungan Luas Permukaan"
+                    isOpen={openSections.surface}
+                    onToggle={() => toggleSection('surface')}
                   >
-                    <Upload className="h-5 w-5 mr-2" />
-                    Impor Model
-                  </button>
+                    <div className="space-y-3">
+                      <p className="text-sm text-gray-600">
+                        Perhitungan luas permukaan menggunakan integral lipat dua:
+                      </p>
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <p className="font-mono text-sm">A = ∫∫ dA = ∫∫ |∂r/∂u × ∂r/∂v| du dv</p>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Untuk setiap elemen permukaan:
+                      </p>
+                      <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+                        <p className="font-mono text-sm">dA = |n| dS</p>
+                        <p className="font-mono text-sm">n = ∂r/∂u × ∂r/∂v</p>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Hasil perhitungan luas permukaan:
+                      </p>
+                      <p className="font-medium">
+                        A = {activeModel.surfaceArea.toFixed(4)} m²
+                      </p>
+                    </div>
+                  </CalculationSection>
+
+                  <CalculationSection
+                    title="3. Optimalisasi"
+                    isOpen={openSections.optimization}
+                    onToggle={() => toggleSection('optimization')}
+                  >
+                    <div className="space-y-3">
+                      <p className="text-sm text-gray-600">
+                        Optimalisasi menggunakan metode Lagrange:
+                      </p>
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <p className="font-mono text-sm">L(x, λ) = f(x) + λg(x)</p>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        Dengan batasan:
+                      </p>
+                      <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+                        <p className="font-mono text-sm">g₁(x): V ≥ {constraints.minVolume} m³</p>
+                        <p className="font-mono text-sm">g₂(x): C ≤ {formatIDR(constraints.maxCost)}</p>
+                        <p className="font-mono text-sm">g₃(x): W ≤ {constraints.maxWeight} kg</p>
+                      </div>
+                    </div>
+                  </CalculationSection>
                 </div>
-              )}
-            </div>
+
+                <button 
+                  onClick={handleExportReport}
+                  className="btn-success w-full sm:w-auto"
+                >
+                  <FileDown className="h-5 w-5 mr-2" />
+                  Ekspor Laporan
+                </button>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-4">
+                  Impor model untuk melihat hasil analisis
+                </p>
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="btn-primary"
+                >
+                  <Upload className="h-5 w-5 mr-2" />
+                  Impor Model
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </main>

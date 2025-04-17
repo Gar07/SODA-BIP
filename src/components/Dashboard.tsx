@@ -1,6 +1,6 @@
 import React, { useState, useRef, Suspense } from 'react';
-import { FileDown, Upload } from 'lucide-react';
-import { ModelMetrics, Material, OptimizationConstraints } from '../types';
+import { FileDown, Upload, ChevronDown, ChevronUp, Calculator } from 'lucide-react';
+import { ModelMetrics, Material, OptimizationConstraints, CalculationStep } from '../types';
 import { GeometricCalculator } from '../utils/calculations';
 import { ReportGenerator } from '../utils/reportGenerator';
 import { FileHandler } from '../utils/fileHandlers';
@@ -9,10 +9,42 @@ import * as XLSX from 'xlsx';
 
 const Viewer3D = React.lazy(() => import('./Viewer3D'));
 
+interface CalculationSectionProps {
+  title: string;
+  isOpen: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}
+
+const CalculationSection: React.FC<CalculationSectionProps> = ({
+  title,
+  isOpen,
+  onToggle,
+  children
+}) => (
+  <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
+    <button
+      onClick={onToggle}
+      className="w-full px-4 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors"
+    >
+      <span className="font-medium text-gray-900">{title}</span>
+      {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+    </button>
+    {isOpen && <div className="p-4">{children}</div>}
+  </div>
+);
+
 const Dashboard: React.FC = () => {
   const [activeModel, setActiveModel] = useState<ModelMetrics | null>(null);
   const [modelGeometry, setModelGeometry] = useState<THREE.BufferGeometry | THREE.Group | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [calculationSteps, setCalculationSteps] = useState<CalculationStep[]>([]);
+  const [openSections, setOpenSections] = useState({
+    volume: true,
+    surface: true,
+    optimization: true
+  });
+
   const [material, setMaterial] = useState<Material>({
     name: 'Baja',
     cost: 5.0,
@@ -26,6 +58,10 @@ const Dashboard: React.FC = () => {
     maxWeight: 500,
     materialConstraints: []
   });
+
+  const toggleSection = (section: keyof typeof openSections) => {
+    setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
 
   const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -75,6 +111,8 @@ const Dashboard: React.FC = () => {
         metrics = GeometricCalculator.calculateMetricsFromGeometry(combinedGeometry, material);
       }
 
+      const steps = GeometricCalculator.generateCalculationSteps(metrics);
+      setCalculationSteps(steps);
       setActiveModel(metrics);
     } catch (error) {
       console.error('Error importing file:', error);
@@ -94,14 +132,14 @@ const Dashboard: React.FC = () => {
     const pdfDoc = ReportGenerator.generatePDFReport(
       activeModel,
       optimizationResult,
-      optimizationResult.steps
+      calculationSteps
     );
     pdfDoc.save('laporan-analisis-arsitektur.pdf');
 
     const workbook = ReportGenerator.generateExcelReport(
       activeModel,
       optimizationResult,
-      optimizationResult.steps
+      calculationSteps
     );
     XLSX.writeFile(workbook, 'laporan-analisis-arsitektur.xlsx');
   };
@@ -119,9 +157,10 @@ const Dashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm fixed top-0 left-0 right-0 z-50">
-        <div className="w-full px-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-4">
+              <Calculator className="h-8 w-8 text-blue-600" />
               <h1 className="text-xl md:text-2xl font-semibold text-gray-900">
                 SODA-BIP
               </h1>
@@ -136,10 +175,11 @@ const Dashboard: React.FC = () => {
               />
               <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="btn-primary"
+                className="btn-primary text-sm md:text-base"
               >
                 <Upload className="h-5 w-5 mr-2" />
-                Impor Model
+                <span className="hidden sm:inline">Impor Model</span>
+                <span className="sm:hidden">Impor</span>
               </button>
             </div>
           </div>
@@ -148,11 +188,11 @@ const Dashboard: React.FC = () => {
 
       {/* Main Content */}
       <main className="pt-16 pb-8">
-        <div className="w-full px-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* 3D Viewer */}
           <div className="card mb-6">
             <h2 className="text-xl font-semibold mb-4">Tampilan Model</h2>
-            <div className="aspect-[21/9] bg-gray-100 rounded-lg mb-4 min-h-[70vh]">
+            <div className="aspect-[16/9] md:aspect-[21/9] bg-gray-100 rounded-lg mb-4">
               <Suspense fallback={
                 <div className="flex items-center justify-center h-full">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600" />
@@ -164,7 +204,7 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Control Panels */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Material Properties */}
             <div className="card">
               <h2 className="text-xl font-semibold mb-4">Properti Material</h2>
@@ -292,49 +332,87 @@ const Dashboard: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Partial Integration Explanation */}
-                  <div className="mt-6 border-t pt-4">
-                    <h3 className="text-lg font-semibold mb-3">Langkah Perhitungan Integral Parsial</h3>
-                    <div className="space-y-4 text-sm">
-                      <div>
-                        <p className="font-medium">1. Perhitungan Volume</p>
-                        <p className="text-gray-600 mt-1">
-                          V = ∫∫∫ dV = ∫∫∫ dx dy dz
+                  {/* Calculation Steps */}
+                  <div className="space-y-4">
+                    <CalculationSection
+                      title="1. Perhitungan Volume"
+                      isOpen={openSections.volume}
+                      onToggle={() => toggleSection('volume')}
+                    >
+                      <div className="space-y-3">
+                        <p className="text-sm text-gray-600">
+                          Perhitungan volume menggunakan integral lipat tiga:
                         </p>
-                        <p className="text-gray-600 mt-1">
-                          Menggunakan metode integral parsial:
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <p className="font-mono text-sm">V = ∫∫∫ dV = ∫∫∫ dx dy dz</p>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Menggunakan metode integral parsial dengan substitusi:
                         </p>
-                        <p className="font-mono bg-gray-50 p-2 rounded mt-1">
-                          ∫u dv = uv - ∫v du
+                        <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+                          <p className="font-mono text-sm">u = x</p>
+                          <p className="font-mono text-sm">dv = dy dz</p>
+                          <p className="font-mono text-sm">∫u dv = uv - ∫v du</p>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Hasil perhitungan volume:
+                        </p>
+                        <p className="font-medium">
+                          V = {activeModel.volume.toFixed(4)} m³
                         </p>
                       </div>
-                      
-                      <div>
-                        <p className="font-medium">2. Perhitungan Luas Permukaan</p>
-                        <p className="text-gray-600 mt-1">
-                          A = ∫∫ dA = ∫∫ |∂r/∂u × ∂r/∂v| du dv
-                        </p>
-                        <p className="text-gray-600 mt-1">
-                          Untuk setiap segmen permukaan:
-                        </p>
-                        <p className="font-mono bg-gray-50 p-2 rounded mt-1">
-                          dA = |n| dS = |∂r/∂u × ∂r/∂v| du dv
-                        </p>
-                      </div>
+                    </CalculationSection>
 
-                      <div>
-                        <p className="font-medium">3. Optimalisasi</p>
-                        <p className="text-gray-600 mt-1">
-                          Menggunakan metode Lagrange untuk optimalisasi dengan batasan:
+                    <CalculationSection
+                      title="2. Perhitungan Luas Permukaan"
+                      isOpen={openSections.surface}
+                      onToggle={() => toggleSection('surface')}
+                    >
+                      <div className="space-y-3">
+                        <p className="text-sm text-gray-600">
+                          Perhitungan luas permukaan menggunakan integral lipat dua:
                         </p>
-                        <p className="font-mono bg-gray-50 p-2 rounded mt-1">
-                          L(x, λ) = f(x) + λg(x)
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <p className="font-mono text-sm">A = ∫∫ dA = ∫∫ |∂r/∂u × ∂r/∂v| du dv</p>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Untuk setiap elemen permukaan:
                         </p>
-                        <p className="text-gray-600 mt-1">
-                          dimana f(x) adalah fungsi objektif dan g(x) adalah batasan.
+                        <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+                          <p className="font-mono text-sm">dA = |n| dS</p>
+                          <p className="font-mono text-sm">n = ∂r/∂u × ∂r/∂v</p>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Hasil perhitungan luas permukaan:
+                        </p>
+                        <p className="font-medium">
+                          A = {activeModel.surfaceArea.toFixed(4)} m²
                         </p>
                       </div>
-                    </div>
+                    </CalculationSection>
+
+                    <CalculationSection
+                      title="3. Optimalisasi"
+                      isOpen={openSections.optimization}
+                      onToggle={() => toggleSection('optimization')}
+                    >
+                      <div className="space-y-3">
+                        <p className="text-sm text-gray-600">
+                          Optimalisasi menggunakan metode Lagrange:
+                        </p>
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                          <p className="font-mono text-sm">L(x, λ) = f(x) + λg(x)</p>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          Dengan batasan:
+                        </p>
+                        <div className="bg-gray-50 p-3 rounded-lg space-y-2">
+                          <p className="font-mono text-sm">g₁(x): V ≥ {constraints.minVolume} m³</p>
+                          <p className="font-mono text-sm">g₂(x): C ≤ {formatIDR(constraints.maxCost)}</p>
+                          <p className="font-mono text-sm">g₃(x): W ≤ {constraints.maxWeight} kg</p>
+                        </div>
+                      </div>
+                    </CalculationSection>
                   </div>
 
                   <button 
@@ -346,9 +424,18 @@ const Dashboard: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-4">
-                  Impor model untuk melihat hasil analisis
-                </p>
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">
+                    Impor model untuk melihat hasil analisis
+                  </p>
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="btn-primary"
+                  >
+                    <Upload className="h-5 w-5 mr-2" />
+                    Impor Model
+                  </button>
+                </div>
               )}
             </div>
           </div>

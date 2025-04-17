@@ -26,6 +26,11 @@ export interface CalculationStep {
   formula: string;
   description: string;
   result: number;
+  intermediateSteps?: {
+    formula: string;
+    description: string;
+    result: number;
+  }[];
 }
 
 export interface OptimizationResult {

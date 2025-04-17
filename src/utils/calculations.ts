@@ -35,8 +35,25 @@ export class GeometricCalculator {
 
           steps.push({
             formula: `V${i/3} = |v1 · (v2 × v3)| / 6`,
-            description: `Volume contribution from triangle ${i/3}`,
-            result: Math.abs(signedVolume)
+            description: `Volume kontribusi dari segitiga ${i/3}`,
+            result: Math.abs(signedVolume),
+            intermediateSteps: [
+              {
+                formula: `v1 = (${v1.x.toFixed(2)}, ${v1.y.toFixed(2)}, ${v1.z.toFixed(2)})`,
+                description: 'Koordinat titik 1',
+                result: v1.length()
+              },
+              {
+                formula: `v2 = (${v2.x.toFixed(2)}, ${v2.y.toFixed(2)}, ${v2.z.toFixed(2)})`,
+                description: 'Koordinat titik 2',
+                result: v2.length()
+              },
+              {
+                formula: `v3 = (${v3.x.toFixed(2)}, ${v3.y.toFixed(2)}, ${v3.z.toFixed(2)})`,
+                description: 'Koordinat titik 3',
+                result: v3.length()
+              }
+            ]
           });
         }
       } else {
@@ -51,8 +68,25 @@ export class GeometricCalculator {
 
           steps.push({
             formula: `V${i/9} = |v1 · (v2 × v3)| / 6`,
-            description: `Volume contribution from triangle ${i/9}`,
-            result: Math.abs(signedVolume)
+            description: `Volume kontribusi dari segitiga ${i/9}`,
+            result: Math.abs(signedVolume),
+            intermediateSteps: [
+              {
+                formula: `v1 = (${v1.x.toFixed(2)}, ${v1.y.toFixed(2)}, ${v1.z.toFixed(2)})`,
+                description: 'Koordinat titik 1',
+                result: v1.length()
+              },
+              {
+                formula: `v2 = (${v2.x.toFixed(2)}, ${v2.y.toFixed(2)}, ${v2.z.toFixed(2)})`,
+                description: 'Koordinat titik 2',
+                result: v2.length()
+              },
+              {
+                formula: `v3 = (${v3.x.toFixed(2)}, ${v3.y.toFixed(2)}, ${v3.z.toFixed(2)})`,
+                description: 'Koordinat titik 3',
+                result: v3.length()
+              }
+            ]
           });
         }
       }
@@ -98,8 +132,20 @@ export class GeometricCalculator {
 
           steps.push({
             formula: `A${i/3} = |v2-v1 × v3-v1| / 2`,
-            description: `Area of triangle ${i/3}`,
-            result: triangleArea
+            description: `Luas segitiga ${i/3}`,
+            result: triangleArea,
+            intermediateSteps: [
+              {
+                formula: `side1 = (${side1.x.toFixed(2)}, ${side1.y.toFixed(2)}, ${side1.z.toFixed(2)})`,
+                description: 'Vektor sisi 1',
+                result: side1.length()
+              },
+              {
+                formula: `side2 = (${side2.x.toFixed(2)}, ${side2.y.toFixed(2)}, ${side2.z.toFixed(2)})`,
+                description: 'Vektor sisi 2',
+                result: side2.length()
+              }
+            ]
           });
         }
       } else {
@@ -116,8 +162,20 @@ export class GeometricCalculator {
 
           steps.push({
             formula: `A${i/9} = |v2-v1 × v3-v1| / 2`,
-            description: `Area of triangle ${i/9}`,
-            result: triangleArea
+            description: `Luas segitiga ${i/9}`,
+            result: triangleArea,
+            intermediateSteps: [
+              {
+                formula: `side1 = (${side1.x.toFixed(2)}, ${side1.y.toFixed(2)}, ${side1.z.toFixed(2)})`,
+                description: 'Vektor sisi 1',
+                result: side1.length()
+              },
+              {
+                formula: `side2 = (${side2.x.toFixed(2)}, ${side2.y.toFixed(2)}, ${side2.z.toFixed(2)})`,
+                description: 'Vektor sisi 2',
+                result: side2.length()
+              }
+            ]
           });
         }
       }
@@ -127,6 +185,35 @@ export class GeometricCalculator {
     }
 
     return area;
+  }
+
+  static generateCalculationSteps(metrics: ModelMetrics): CalculationStep[] {
+    return [
+      {
+        formula: 'V = ∫∫∫ dx dy dz',
+        description: 'Volume total menggunakan integral lipat tiga',
+        result: metrics.volume,
+        intermediateSteps: [
+          {
+            formula: '∫u dv = uv - ∫v du',
+            description: 'Metode integral parsial',
+            result: metrics.volume
+          }
+        ]
+      },
+      {
+        formula: 'A = ∫∫ |∂r/∂u × ∂r/∂v| du dv',
+        description: 'Luas permukaan menggunakan integral lipat dua',
+        result: metrics.surfaceArea,
+        intermediateSteps: [
+          {
+            formula: 'dA = |n| dS',
+            description: 'Elemen luas permukaan',
+            result: metrics.surfaceArea
+          }
+        ]
+      }
+    ];
   }
 
   static calculateMetricsFromGeometry(
@@ -166,12 +253,48 @@ export class GeometricCalculator {
     const costSavings = volumeReduction * material.density * material.cost;
     const weightSavings = volumeReduction * material.density;
 
+    steps.push({
+      formula: 'ΔV = V - Vmin',
+      description: 'Pengurangan volume yang mungkin',
+      result: volumeReduction,
+      intermediateSteps: [
+        {
+          formula: `V = ${metrics.volume.toFixed(2)}`,
+          description: 'Volume awal',
+          result: metrics.volume
+        },
+        {
+          formula: `Vmin = ${constraints.minVolume}`,
+          description: 'Volume minimum yang diizinkan',
+          result: constraints.minVolume
+        }
+      ]
+    });
+
     // Apply optimizations while respecting constraints
     optimizedMetrics.volume -= volumeReduction;
     optimizedMetrics.weight -= weightSavings;
     optimizedMetrics.cost -= costSavings;
 
     const savingsPercentage = (costSavings / metrics.cost) * 100;
+
+    steps.push({
+      formula: 'Savings% = (ΔCost / Cost) × 100',
+      description: 'Persentase penghematan biaya',
+      result: savingsPercentage,
+      intermediateSteps: [
+        {
+          formula: `ΔCost = ${costSavings.toFixed(2)}`,
+          description: 'Penghematan biaya',
+          result: costSavings
+        },
+        {
+          formula: `Cost = ${metrics.cost.toFixed(2)}`,
+          description: 'Biaya awal',
+          result: metrics.cost
+        }
+      ]
+    });
 
     return {
       originalMetrics: metrics,
@@ -182,9 +305,9 @@ export class GeometricCalculator {
         percentage: savingsPercentage
       },
       recommendations: [
-        `Reduce material volume by ${volumeReduction.toFixed(2)} cubic units`,
-        `Potential cost savings: ${costSavings.toFixed(2)} units`,
-        `Weight reduction: ${weightSavings.toFixed(2)} ${material.unit}`
+        `Kurangi volume material sebesar ${volumeReduction.toFixed(2)} m³`,
+        `Potensi penghematan biaya: ${costSavings.toFixed(2)} satuan`,
+        `Pengurangan berat: ${weightSavings.toFixed(2)} ${material.unit}`
       ],
       steps
     };

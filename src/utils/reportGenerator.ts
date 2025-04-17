@@ -20,9 +20,13 @@ export class ReportGenerator {
     const doc = new jsPDF();
     let yPos = 20;
 
-    // Add title
+    // Add title and date
     doc.setFontSize(20);
     doc.text('Laporan Analisis Desain Arsitektur', 20, yPos);
+    yPos += 10;
+    
+    doc.setFontSize(10);
+    doc.text(`Tanggal: ${new Date().toLocaleDateString('id-ID')}`, 20, yPos);
     yPos += 20;
 
     // Add model metrics
@@ -40,6 +44,52 @@ export class ReportGenerator {
     doc.text(`Biaya: ${this.formatIDR(metrics.cost)}`, 30, yPos);
     yPos += 20;
 
+    // Add calculation steps
+    doc.setFontSize(16);
+    doc.text('Langkah Perhitungan', 20, yPos);
+    yPos += 15;
+
+    doc.setFontSize(14);
+    doc.text('1. Perhitungan Volume', 25, yPos);
+    yPos += 10;
+
+    doc.setFontSize(12);
+    doc.text('Menggunakan integral lipat tiga:', 30, yPos);
+    yPos += 7;
+    doc.text('V = ∫∫∫ dx dy dz', 35, yPos);
+    yPos += 10;
+
+    doc.text('Metode integral parsial:', 30, yPos);
+    yPos += 7;
+    doc.text('∫u dv = uv - ∫v du', 35, yPos);
+    yPos += 10;
+
+    steps.forEach(step => {
+      if (step.intermediateSteps) {
+        doc.text(`${step.description}:`, 30, yPos);
+        yPos += 7;
+        doc.text(`Formula: ${step.formula}`, 35, yPos);
+        yPos += 7;
+        doc.text(`Hasil: ${step.result.toFixed(4)}`, 35, yPos);
+        yPos += 10;
+
+        step.intermediateSteps.forEach(subStep => {
+          doc.text(`- ${subStep.description}:`, 40, yPos);
+          yPos += 7;
+          doc.text(`  ${subStep.formula}`, 45, yPos);
+          yPos += 7;
+          doc.text(`  Hasil: ${subStep.result.toFixed(4)}`, 45, yPos);
+          yPos += 7;
+        });
+      }
+    });
+
+    // Add new page if needed
+    if (yPos > 250) {
+      doc.addPage();
+      yPos = 20;
+    }
+
     // Add optimization results
     doc.setFontSize(16);
     doc.text('Hasil Optimalisasi', 20, yPos);
@@ -51,21 +101,17 @@ export class ReportGenerator {
     doc.text(`Penghematan Biaya: ${this.formatIDR(optimizationResult.savings.cost)}`, 30, yPos);
     yPos += 10;
     doc.text(`Persentase Penghematan: ${optimizationResult.savings.percentage.toFixed(2)}%`, 30, yPos);
-    yPos += 20;
+    yPos += 15;
 
-    // Add calculation steps
-    doc.setFontSize(16);
-    doc.text('Langkah Perhitungan', 20, yPos);
+    // Add recommendations
+    doc.setFontSize(14);
+    doc.text('Rekomendasi:', 20, yPos);
     yPos += 10;
 
     doc.setFontSize(12);
-    steps.forEach(step => {
-      doc.text(`${step.description}:`, 30, yPos);
+    optimizationResult.recommendations.forEach(recommendation => {
+      doc.text(`• ${recommendation}`, 25, yPos);
       yPos += 7;
-      doc.text(`Formula: ${step.formula}`, 40, yPos);
-      yPos += 7;
-      doc.text(`Hasil: ${step.result.toFixed(4)}`, 40, yPos);
-      yPos += 10;
     });
 
     return doc;
@@ -89,6 +135,25 @@ export class ReportGenerator {
     const metricsWS = XLSX.utils.aoa_to_sheet(metricsData);
     XLSX.utils.book_append_sheet(wb, metricsWS, 'Metrik');
 
+    // Create calculation steps worksheet
+    const stepsData = steps.flatMap(step => {
+      const rows = [
+        [step.description, step.formula, step.result.toFixed(4)]
+      ];
+
+      if (step.intermediateSteps) {
+        step.intermediateSteps.forEach(subStep => {
+          rows.push(['', subStep.description, '']);
+          rows.push(['', subStep.formula, subStep.result.toFixed(4)]);
+        });
+      }
+
+      return rows;
+    });
+    stepsData.unshift(['Langkah', 'Formula', 'Hasil']);
+    const stepsWS = XLSX.utils.aoa_to_sheet(stepsData);
+    XLSX.utils.book_append_sheet(wb, stepsWS, 'Langkah Perhitungan');
+
     // Create optimization worksheet
     const optimizationData = [
       ['Metrik', 'Asli', 'Optimalisasi', 'Penghematan', 'Satuan'],
@@ -107,16 +172,6 @@ export class ReportGenerator {
     ];
     const optimizationWS = XLSX.utils.aoa_to_sheet(optimizationData);
     XLSX.utils.book_append_sheet(wb, optimizationWS, 'Optimalisasi');
-
-    // Create steps worksheet
-    const stepsData = steps.map(step => [
-      step.description,
-      step.formula,
-      step.result.toFixed(4)
-    ]);
-    stepsData.unshift(['Deskripsi', 'Formula', 'Hasil']);
-    const stepsWS = XLSX.utils.aoa_to_sheet(stepsData);
-    XLSX.utils.book_append_sheet(wb, stepsWS, 'Langkah Perhitungan');
 
     return wb;
   }

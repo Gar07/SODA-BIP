@@ -1,9 +1,12 @@
-import React, { useState, useRef, Suspense } from 'react';
-import { FileDown, Upload, ChevronDown, ChevronUp, Calculator } from 'lucide-react';
+import React, { useState, useRef, Suspense, useEffect } from 'react';
+import { FileDown, Upload, ChevronDown, ChevronUp, Calculator, HelpCircle, Undo, Redo } from 'lucide-react';
 import { ModelMetrics, Material, OptimizationConstraints, CalculationStep } from '../types';
 import { GeometricCalculator } from '../utils/calculations';
 import { ReportGenerator } from '../utils/reportGenerator';
 import { FileHandler } from '../utils/fileHandlers';
+import Tutorial from './Tutorial';
+import MaterialLibrary from './MaterialLibrary';
+import ChartVisualization from './ChartVisualization';
 import * as THREE from 'three';
 import * as XLSX from 'xlsx';
 
@@ -35,6 +38,7 @@ const CalculationSection: React.FC<CalculationSectionProps> = ({
 );
 
 const Dashboard: React.FC = () => {
+  const [showTutorial, setShowTutorial] = useState(true);
   const [activeModel, setActiveModel] = useState<ModelMetrics | null>(null);
   const [modelGeometry, setModelGeometry] = useState<THREE.BufferGeometry | THREE.Group | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -59,8 +63,60 @@ const Dashboard: React.FC = () => {
     materialConstraints: []
   });
 
+  const [history, setHistory] = useState<{
+    past: any[];
+    future: any[];
+  }>({
+    past: [],
+    future: []
+  });
+
+  useEffect(() => {
+    const hasVisited = localStorage.getItem('hasVisitedBefore');
+    if (!hasVisited) {
+      setShowTutorial(true);
+      localStorage.setItem('hasVisitedBefore', 'true');
+    } else {
+      setShowTutorial(false);
+    }
+  }, []);
+
   const toggleSection = (section: keyof typeof openSections) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const handleUndo = () => {
+    if (history.past.length === 0) return;
+    
+    const previous = history.past[history.past.length - 1];
+    const newPast = history.past.slice(0, -1);
+    
+    setHistory({
+      past: newPast,
+      future: [{ activeModel, modelGeometry, material, constraints }, ...history.future]
+    });
+    
+    setActiveModel(previous.activeModel);
+    setModelGeometry(previous.modelGeometry);
+    setMaterial(previous.material);
+    setConstraints(previous.constraints);
+  };
+
+  const handleRedo = () => {
+    if (history.future.length === 0) return;
+    
+    const next = history.future[0];
+    const newFuture = history.future.slice(1);
+    
+    setHistory({
+      past: [...history.past, { activeModel, modelGeometry, material, constraints }],
+      future: newFuture
+    });
+    
+    setActiveModel(next.activeModel);
+    setModelGeometry(next.modelGeometry);
+    setMaterial(next.material);
+    setConstraints(next.constraints);
   };
 
   const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,6 +170,12 @@ const Dashboard: React.FC = () => {
       const steps = GeometricCalculator.generateCalculationSteps(metrics);
       setCalculationSteps(steps);
       setActiveModel(metrics);
+
+      // Add to history
+      setHistory(prev => ({
+        past: [...prev.past, { activeModel, modelGeometry, material, constraints }],
+        future: []
+      }));
     } catch (error) {
       console.error('Error importing file:', error);
       alert('Gagal mengimpor file. Silakan coba lagi.');
@@ -155,6 +217,8 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Tutorial isOpen={showTutorial} onClose={() => setShowTutorial(false)} />
+      
       {/* Header */}
       <header className="bg-white shadow-sm fixed top-0 left-0 right-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -166,6 +230,29 @@ const Dashboard: React.FC = () => {
               </h1>
             </div>
             <div className="flex items-center gap-4">
+              <button
+                onClick={handleUndo}
+                disabled={history.past.length === 0}
+                className={`btn-secondary text-sm md:text-base ${history.past.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title="Undo"
+              >
+                <Undo className="h-5 w-5" />
+              </button>
+              <button
+                onClick={handleRedo}
+                disabled={history.future.length === 0}
+                className={`btn-secondary text-sm md:text-base ${history.future.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title="Redo"
+              >
+                <Redo className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => setShowTutorial(true)}
+                className="btn-secondary text-sm md:text-base"
+                title="Bantuan"
+              >
+                <HelpCircle className="h-5 w-5" />
+              </button>
               <input
                 type="file"
                 ref={fileInputRef}
@@ -203,8 +290,16 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
+          {/* Chart Visualization */}
+          {activeModel && <ChartVisualization />}
+
           {/* Control Panels */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+            {/* Material Library */}
+            <div className="lg:col-span-1">
+              <MaterialLibrary />
+            </div>
+
             {/* Material Properties */}
             <div className="card">
               <h2 className="text-xl font-semibold mb-4">Properti Material</h2>
@@ -307,8 +402,10 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Analysis Results */}
+          {/* Analysis Results */}
+          <div className="mt-6">
             <div className="card">
               <h2 className="text-xl font-semibold mb-4">Hasil Analisis</h2>
               {activeModel ? (

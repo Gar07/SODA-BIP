@@ -64,4 +64,23 @@
   .viewer-toolbar-button {
     @apply p-2 hover:bg-gray-100 rounded-lg transition-colors;
   }
+
+  /* Tutorial styles */
+  .tutorial-step {
+    @apply relative pl-8 pb-8;
+  }
+
+  .tutorial-step::before {
+    content: '';
+    @apply absolute left-0 top-0 bottom-0 w-0.5 bg-gray-200;
+  }
+
+  .tutorial-step:last-child::before {
+    @apply bottom-auto h-8;
+  }
+
+  .tutorial-step-number {
+    @apply absolute left-0 -translate-x-1/2 w-6 h-6 rounded-full bg-blue-600 text-white
+           flex items-center justify-center text-sm font-medium;
+  }
 }

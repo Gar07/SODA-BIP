@@ -1,6 +1,6 @@
 import React, { useState, useRef, Suspense, useEffect } from 'react';
 import { FileDown, Upload, ChevronDown, ChevronUp, Calculator, HelpCircle, Undo, Redo } from 'lucide-react';
-import { ModelMetrics, Material, OptimizationConstraints, CalculationStep } from '../types';
+import { ModelMetrics, Material, OptimizationConstraints, CalculationStep, WeightUnit } from '../types';
 import { GeometricCalculator } from '../utils/calculations';
 import { ReportGenerator } from '../utils/reportGenerator';
 import { FileHandler } from '../utils/fileHandlers';
@@ -51,13 +51,13 @@ const Dashboard: React.FC = () => {
 
   const [material, setMaterial] = useState<Material>({
     name: 'Baja',
-    cost: 5.0,
+    cost: 10000,
     density: 7.85,
     unit: 'kg'
   });
 
   const [constraints, setConstraints] = useState<OptimizationConstraints>({
-    maxCost: 1000,
+    maxCost: 1000000,
     minVolume: 100,
     maxWeight: 500,
     materialConstraints: []
@@ -119,6 +119,22 @@ const Dashboard: React.FC = () => {
     setConstraints(next.constraints);
   };
 
+  const convertWeight = (value: number, from: WeightUnit, to: WeightUnit): number => {
+    if (from === to) return value;
+    return from === 'kg' ? value * 1000 : value / 1000;
+  };
+
+  const handleMaterialChange = (newMaterial: Material) => {
+    setMaterial(newMaterial);
+    if (activeModel) {
+      const updatedMetrics = GeometricCalculator.calculateMetricsFromGeometry(
+        modelGeometry instanceof THREE.BufferGeometry ? modelGeometry : new THREE.BufferGeometry(),
+        newMaterial
+      );
+      setActiveModel(updatedMetrics);
+    }
+  };
+
   const handleFileImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -171,7 +187,6 @@ const Dashboard: React.FC = () => {
       setCalculationSteps(steps);
       setActiveModel(metrics);
 
-      // Add to history
       setHistory(prev => ({
         past: [...prev.past, { activeModel, modelGeometry, material, constraints }],
         future: []
@@ -296,7 +311,7 @@ const Dashboard: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Material Library */}
             <div className="md:col-span-2 lg:col-span-1">
-              <MaterialLibrary />
+              <MaterialLibrary onSelect={handleMaterialChange} />
             </div>
 
             {/* Material Properties */}
@@ -310,32 +325,32 @@ const Dashboard: React.FC = () => {
                   <input
                     type="text"
                     value={material.name}
-                    onChange={(e) => setMaterial({ ...material, name: e.target.value })}
+                    onChange={(e) => handleMaterialChange({ ...material, name: e.target.value })}
                     className="input-field"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Biaya per Unit
+                      Biaya per Unit (Rp)
                     </label>
                     <input
                       type="number"
                       value={material.cost}
-                      onChange={(e) => setMaterial({ ...material, cost: parseFloat(e.target.value) })}
+                      onChange={(e) => handleMaterialChange({ ...material, cost: parseFloat(e.target.value) })}
                       className="input-field"
                       min="0"
-                      step="0.01"
+                      step="100"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Densitas (kg/m³)
+                      Densitas (g/cm³)
                     </label>
                     <input
                       type="number"
                       value={material.density}
-                      onChange={(e) => setMaterial({ ...material, density: parseFloat(e.target.value) })}
+                      onChange={(e) => handleMaterialChange({ ...material, density: parseFloat(e.target.value) })}
                       className="input-field"
                       min="0"
                       step="0.01"
@@ -348,11 +363,11 @@ const Dashboard: React.FC = () => {
                   </label>
                   <select
                     value={material.unit}
-                    onChange={(e) => setMaterial({ ...material, unit: e.target.value as 'kg' | 'lb' })}
+                    onChange={(e) => handleMaterialChange({ ...material, unit: e.target.value as WeightUnit })}
                     className="input-field"
                   >
                     <option value="kg">kg</option>
-                    <option value="lb">lb</option>
+                    <option value="g">g</option>
                   </select>
                 </div>
               </div>
@@ -365,7 +380,7 @@ const Dashboard: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Biaya Maksimum
+                      Biaya Maksimum (Rp)
                     </label>
                     <input
                       type="number"
@@ -423,7 +438,12 @@ const Dashboard: React.FC = () => {
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-500">Berat</p>
-                    <p className="text-lg font-medium">{activeModel.weight.toFixed(2)} kg</p>
+                    <p className="text-lg font-medium">
+                      {material.unit === 'kg' 
+                        ? activeModel.weight.toFixed(2) + ' kg'
+                        : (activeModel.weight * 1000).toFixed(2) + ' g'
+                      }
+                    </p>
                   </div>
                   <div className="p-4 bg-gray-50 rounded-lg">
                     <p className="text-sm text-gray-500">Biaya</p>

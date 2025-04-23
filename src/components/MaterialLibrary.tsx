@@ -3,11 +3,15 @@ import { Book } from 'lucide-react';
 import useStore from '../store';
 
 const commonMaterials = [
-  { name: 'Baja', density: 7.85, cost: 5.0, unit: 'kg' },
-  { name: 'Aluminium', density: 2.7, cost: 8.0, unit: 'kg' },
-  { name: 'Beton', density: 2.4, cost: 2.0, unit: 'kg' },
-  { name: 'Kayu', density: 0.7, cost: 3.0, unit: 'kg' },
-  { name: 'Kaca', density: 2.5, cost: 6.0, unit: 'kg' }
+  { name: 'Baja', density: 7.85, cost: 10000, unit: 'kg' },
+  { name: 'Aluminium', density: 2.7, cost: 25000, unit: 'kg' },
+  { name: 'Beton', density: 2.4, cost: 500, unit: 'kg' },
+  { name: 'Kayu', density: 0.7, cost: 8000, unit: 'kg' },
+  { name: 'Kaca', density: 2.5, cost: 15000, unit: 'kg' },
+  { name: 'Semen', density: 1.5, cost: 2500, unit: 'kg' },
+  { name: 'Pasir Sungai', density: 1.5, cost: 200, unit: 'kg' },
+  { name: 'Batu Bata Merah', density: 1.7, cost: 200, unit: 'kg' },
+  { name: 'Kayu Meranti', density: 0.7, cost: 5500, unit: 'kg' }
 ];
 
 const MaterialLibrary: React.FC = () => {
@@ -19,7 +23,7 @@ const MaterialLibrary: React.FC = () => {
         <Book className="h-5 w-5 text-blue-600" />
         <h3 className="text-lg font-semibold">Pustaka Material</h3>
       </div>
-      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3">
         {commonMaterials.map((material) => (
           <button
             key={material.name}

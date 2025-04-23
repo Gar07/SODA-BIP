@@ -4,7 +4,7 @@ export interface Material {
   name: string;
   cost: number;
   density: number;
-  unit: 'kg' | 'lb';
+  unit: 'kg' | 'g';
 }
 
 export interface ModelMetrics {
@@ -44,3 +44,5 @@ export interface OptimizationResult {
   recommendations: string[];
   steps: CalculationStep[];
 }
+
+export type WeightUnit = 'kg' | 'g';
